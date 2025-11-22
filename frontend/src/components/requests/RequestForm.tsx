@@ -1,4 +1,5 @@
 import React, { useState, useRef } from "react";
+import { toast } from "sonner";
 import { requestsAPI, documentsAPI, PurchaseRequest, RequestItem } from "../../services/api";
 
 interface RequestFormProps {
@@ -131,27 +132,39 @@ const RequestForm: React.FC<RequestFormProps> = ({
       if (initialData) {
         await requestsAPI.update(initialData.id, data);
         requestId = initialData.id;
+        toast.success("Request updated successfully!", {
+          description: "Your purchase request has been updated.",
+        });
       } else {
         const response = await requestsAPI.create(data);
         requestId = response.data.id;
+        toast.success("Request created successfully!", {
+          description: "Your purchase request has been submitted for approval.",
+        });
       }
 
       // Upload proforma if file is selected
       if (proformaFile && !initialData) {
         try {
           await documentsAPI.uploadProforma(requestId, proformaFile);
+          toast.success("Proforma uploaded!", {
+            description: "The proforma invoice has been attached to your request.",
+          });
         } catch (uploadError: any) {
           console.error("Proforma upload error:", uploadError);
-          // Don't fail the entire request if proforma upload fails
-          setError(
-            "Request created successfully, but proforma upload failed. You can upload it later."
-          );
+          toast.warning("Proforma upload failed", {
+            description: "Request created, but proforma upload failed. You can upload it later.",
+          });
         }
       }
 
       onSuccess();
     } catch (err: any) {
-      setError(err.response?.data?.error || "Failed to save request");
+      const errorMessage = err.response?.data?.error || "Failed to save request";
+      setError(errorMessage);
+      toast.error("Request failed", {
+        description: errorMessage,
+      });
     } finally {
       setLoading(false);
     }

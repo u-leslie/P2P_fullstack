@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { toast } from "sonner";
 import {
   PurchaseRequest,
   documentsAPI,
@@ -48,10 +49,17 @@ const RequestDetail: React.FC<RequestDetailProps> = ({
     setError("");
     try {
       await requestsAPI.approve(request.id);
+      toast.success("Request approved!", {
+        description: "The purchase request has been approved successfully.",
+      });
       onUpdate();
       onClose();
     } catch (err: any) {
-      setError(err.response?.data?.error || "Failed to approve request");
+      const errorMessage = err.response?.data?.error || "Failed to approve request";
+      setError(errorMessage);
+      toast.error("Approval failed", {
+        description: errorMessage,
+      });
     } finally {
       setLoading(false);
     }
@@ -60,46 +68,80 @@ const RequestDetail: React.FC<RequestDetailProps> = ({
   const handleReject = async () => {
     if (!rejectReason.trim()) {
       setError("Please provide a rejection reason");
+      toast.error("Rejection reason required", {
+        description: "Please provide a reason for rejecting this request.",
+      });
       return;
     }
     setLoading(true);
     setError("");
     try {
       await requestsAPI.reject(request.id, rejectReason);
+      toast.success("Request rejected", {
+        description: "The purchase request has been rejected.",
+      });
       onUpdate();
       onClose();
     } catch (err: any) {
-      setError(err.response?.data?.error || "Failed to reject request");
+      const errorMessage = err.response?.data?.error || "Failed to reject request";
+      setError(errorMessage);
+      toast.error("Rejection failed", {
+        description: errorMessage,
+      });
     } finally {
       setLoading(false);
     }
   };
 
   const handleProformaUpload = async () => {
-    if (!proformaFile) return;
+    if (!proformaFile) {
+      toast.error("No file selected", {
+        description: "Please select a proforma file to upload.",
+      });
+      return;
+    }
     setLoading(true);
     setError("");
     try {
       await documentsAPI.uploadProforma(request.id, proformaFile);
+      toast.success("Proforma uploaded!", {
+        description: "The proforma invoice has been uploaded successfully.",
+      });
       setProformaFile(null);
       onUpdate();
     } catch (err: any) {
-      setError(err.response?.data?.error || "Failed to upload proforma");
+      const errorMessage = err.response?.data?.error || "Failed to upload proforma";
+      setError(errorMessage);
+      toast.error("Upload failed", {
+        description: errorMessage,
+      });
     } finally {
       setLoading(false);
     }
   };
 
   const handleReceiptUpload = async () => {
-    if (!receiptFile) return;
+    if (!receiptFile) {
+      toast.error("No file selected", {
+        description: "Please select a receipt file to upload.",
+      });
+      return;
+    }
     setLoading(true);
     setError("");
     try {
       await documentsAPI.uploadReceipt(request.id, receiptFile);
+      toast.success("Receipt uploaded!", {
+        description: "The receipt has been uploaded successfully.",
+      });
       setReceiptFile(null);
       onUpdate();
     } catch (err: any) {
-      setError(err.response?.data?.error || "Failed to upload receipt");
+      const errorMessage = err.response?.data?.error || "Failed to upload receipt";
+      setError(errorMessage);
+      toast.error("Upload failed", {
+        description: errorMessage,
+      });
     } finally {
       setLoading(false);
     }

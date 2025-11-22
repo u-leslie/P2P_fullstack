@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import { useAuth } from "../context/AuthContext";
 
 const Login: React.FC = () => {
@@ -19,9 +20,16 @@ const Login: React.FC = () => {
     const result = await login(email, password);
 
     if (result.success) {
+      toast.success("Login successful!", {
+        description: "Welcome back!",
+      });
       navigate("/dashboard");
     } else {
-      setError(result.error || "Login failed");
+      const errorMessage = result.error || "Login failed";
+      setError(errorMessage);
+      toast.error("Login failed", {
+        description: errorMessage,
+      });
     }
 
     setLoading(false);
@@ -51,7 +59,37 @@ const Login: React.FC = () => {
       {/* Left Side - Login Form */}
       <div className="w-full lg:w-1/2 flex items-center justify-center bg-white p-8">
         <div className="w-full max-w-md">
-          <div className="mb-10">
+          <div className="mb-10 text-center">
+            {/* Logo */}
+            <div className="flex justify-center mb-6">
+              <svg
+                className="w-16 h-16 text-purple-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                {/* Stylized P shape */}
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2.5}
+                  d="M6 4h6a4 4 0 014 4v0a4 4 0 01-4 4H6V4z"
+                />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2.5}
+                  d="M6 4v16"
+                />
+                {/* Arrow representing "to Pay" flow */}
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2.5}
+                  d="M16 8l4 4-4 4"
+                />
+              </svg>
+            </div>
             <h1 className="text-3xl font-semibold text-gray-900 mb-2">
               Welcome Back
             </h1>

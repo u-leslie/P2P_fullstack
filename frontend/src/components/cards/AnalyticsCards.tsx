@@ -150,9 +150,7 @@ const AnalyticsCards: React.FC<AnalyticsCardsProps> = ({
             onClick={() => onFilterChange?.(card.filter)}
             className={`${colors.bg} ${colors.border} border-2 rounded-xl p-6 shadow-sm transition-all duration-200 ${
               onFilterChange ? "cursor-pointer" : ""
-            } ${isActive ? "ring-2 ring-purple-500 ring-offset-2" : ""} ${
-              onFilterChange ? colors.hover : ""
-            }`}
+            } ${onFilterChange ? colors.hover : ""}`}
           >
             <div className="flex items-start justify-between">
               <div className="flex-1">

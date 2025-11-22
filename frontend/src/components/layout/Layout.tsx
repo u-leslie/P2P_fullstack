@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import { useAuth } from "../../context/AuthContext";
 import LogoutModal from "../modals/LogoutModal";
 
@@ -19,6 +20,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const handleLogoutConfirm = () => {
     logout();
     setShowLogoutModal(false);
+    toast.success("Logged out successfully", {
+      description: "You have been logged out of your account.",
+    });
     navigate("/login");
   };
 
@@ -69,25 +73,41 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           <div className="flex justify-between items-center h-16">
             {/* Logo and Brand */}
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-purple-600 rounded-lg flex items-center justify-center shadow-sm">
-                <svg
-                  className="w-6 h-6 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2.5}
-                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                  />
-                </svg>
-              </div>
+              {/* Unique P2P logo - stylized P with arrow, no background */}
+              <svg
+                className="w-10 h-10 text-purple-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                {/* Stylized P shape */}
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2.5}
+                  d="M6 4h6a4 4 0 014 4v0a4 4 0 01-4 4H6V4z"
+                />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2.5}
+                  d="M6 4v16"
+                />
+                {/* Arrow representing "to Pay" flow */}
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2.5}
+                  d="M16 8l4 4-4 4"
+                />
+              </svg>
               <div>
-                <h1 className="text-xl font-semibold text-gray-900 tracking-tight">
-                  P2P
+                <h1 className="text-xl font-bold text-gray-900 tracking-tight">
+                  Procure to Pay
                 </h1>
+                <p className="text-xs text-gray-500 -mt-0.5 font-medium">
+                  Procurement Management System
+                </p>
               </div>
             </div>
 

@@ -210,7 +210,7 @@ docker-compose up --build
 - Backend → http://localhost:8000
 - Frontend → http://localhost:3000
 
-### 2. Build & push production images (Docker Hub tag: `uleslie`)
+### 2. Build & push production images (Docker Hub tag (Example): `uleslie`)
 ```bash
 # Backend (gunicorn + entrypoint)
 docker build -t uleslie/p2p-backend:latest backend
