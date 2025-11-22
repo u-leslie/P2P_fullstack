@@ -36,3 +36,4 @@ tqdm==4.67.1
 typing-inspection==0.4.2
 typing_extensions==4.15.0
 setuptools>=65.0.0
+gunicorn==21.2.0

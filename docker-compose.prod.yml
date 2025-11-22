@@ -3,57 +3,44 @@ version: '3.8'
 services:
   db:
     image: postgres:15-alpine
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
     environment:
       POSTGRES_DB: procure_to_pay
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-    ports:
-      - "5432:5432"
+    volumes:
+      - prod_postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
 
   backend:
-    build: ./backend
-    volumes:
-      - ./backend:/app
-      - backend_static:/app/staticfiles
-      - backend_media:/app/media
-    ports:
-      - "8000:8000"
+    image: uleslie/p2p-backend:latest
     env_file:
-      - ./backend/.env
+      - ./backend/.env.production
     environment:
-      - DEBUG=True
       - DB_NAME=procure_to_pay
       - DB_USER=postgres
       - DB_PASSWORD=postgres
       - DB_HOST=db
       - DB_PORT=5432
+    ports:
+      - "8000:8000"
     depends_on:
       db:
         condition: service_healthy
     restart: unless-stopped
 
   frontend:
-    build:
-      context: ./frontend
-      args:
-        - REACT_APP_API_URL=http://backend:8000/api
+    image: uleslie/p2p-frontend:latest
     ports:
-      - "3000:80"
-    environment:
-      - REACT_APP_API_URL=http://backend:8000/api
+      - "80:80"
     depends_on:
       - backend
     restart: unless-stopped
 
 volumes:
-  postgres_data:
-  backend_static:
-  backend_media:
+  prod_postgres_data:
 

@@ -32,6 +32,16 @@ A comprehensive Purchase Request & Approval System built with Django REST Framew
 - Docker & Docker Compose
 - Nginx (for frontend)
 
+## Live Application
+
+🌐 **Public Frontend URL**: http://51.21.222.212
+
+You can access the live application using the default credentials:
+- **Staff**: `staff@p2p.com` / `Test@123`
+- **Approver Level 1**: `approve1@p2p.com` / `Test@123`
+- **Approver Level 2**: `approve2@p2p.com` / `Test@123`
+- **Finance**: `finance@p2p.com` / `Test@123`
+
 ## Quick Start
 
 ### Prerequisites
@@ -42,8 +52,8 @@ A comprehensive Purchase Request & Approval System built with Django REST Framew
 
 1. **Clone the repository**
    ```bash
-   git clone <repository-url>
-   cd IST_Tech_Assessment
+   git clone https://github.com/u-leslie/P2P_fullstack.git
+   cd P2P_fullstack
    ```
 
 2. **Configure environment variables**
@@ -70,10 +80,12 @@ A comprehensive Purchase Request & Approval System built with Django REST Framew
    ```
 
 5. **Access the application**
-   - Frontend: http://localhost:3000
-   - Backend API: http://localhost:8000
-   - API Documentation (Swagger): http://localhost:8000/swagger/
-   - Admin Panel: http://localhost:8000/admin/
+   - **Live Frontend**: http://51.21.222.212
+   - **Local Development**:
+     - Frontend: http://localhost:3000
+     - Backend API: http://localhost:800
+     - API Documentation (Swagger): http://localhost:8000/swagger/
+     - Admin Panel: http://localhost:8000/admin/
 
 ## Development Setup
 
@@ -189,6 +201,67 @@ Uses OpenAI GPT-4 (if API key provided) or falls back to basic text extraction.
 - **Railway**: Connect repo and deploy
 - **DigitalOcean**: Use App Platform or Droplets
 
+## Docker & Hosting Guide
+
+### 1. Local development
+```bash
+docker-compose up --build
+```
+- Backend → http://localhost:8000
+- Frontend → http://localhost:3000
+
+### 2. Build & push production images (Docker Hub tag: `uleslie`)
+```bash
+# Backend (gunicorn + entrypoint)
+docker build -t uleslie/p2p-backend:latest backend
+docker push uleslie/p2p-backend:latest
+
+# Frontend (compile with API URL)
+docker build \
+  --build-arg REACT_APP_API_URL=https://<your-domain-or-ip>/api \
+  -t uleslie/p2p-frontend:latest \
+  frontend
+docker push uleslie/p2p-frontend:latest
+```
+
+### 3. Run production stack (locally or on a server)
+1. Create a production env file (copy your local `.env` or start fresh):
+   ```bash
+   cp backend/.env backend/.env.production   # edit with production values
+   ```
+2. Bring up the stack:
+   ```bash
+   docker-compose -f docker-compose.prod.yml up -d
+   ```
+- Frontend exposed on port **80**
+- Backend exposed on port **8000**
+
+### 4. AWS EC2 (Free Tier) deployment steps
+1. Launch **Ubuntu 22.04** `t2.micro`, open ports 22/80/443 (8000 optional).
+2. SSH in and install Docker:
+   ```bash
+   sudo apt update && sudo apt install docker.io docker-compose -y
+   sudo usermod -aG docker ubuntu
+   exit && ssh back in
+   ```
+3. Clone repo & prepare environment:
+   ```bash
+   git clone https://github.com/u-leslie/P2P_fullstack.git
+   cd P2P_fullstack
+   cp backend/.env backend/.env.production   # adjust DB creds, secrets
+   ```
+4. Pull images & start production compose:
+   ```bash
+   docker login
+   docker pull uleslie/p2p-backend:latest
+   docker pull uleslie/p2p-frontend:latest
+   docker-compose -f docker-compose.prod.yml up -d
+   ```
+5. Visit `http://<ec2-public-ip>` for the React UI. API lives at `http://<ec2-public-ip>:8000/api`.
+6. (Optional) Attach a domain + HTTPS (Nginx + Certbot or AWS Load Balancer).
+
+> Stop the EC2 instance when idle to stay within Free Tier limits.
+
 ## Testing
 
 ```bash
@@ -204,7 +277,7 @@ npm test
 ## Project Structure
 
 ```
-IST_Tech_Assessment/
+P2P_fullstack/
 ├── backend/
 │   ├── users/          # User model and authentication
 │   ├── requests/       # Purchase request models and views
@@ -219,6 +292,10 @@ IST_Tech_Assessment/
 ├── docker-compose.yml
 └── README.md
 ```
+
+## Repository
+
+ **GitHub Repository**: https://github.com/u-leslie/P2P_fullstack
 
 ## License
 

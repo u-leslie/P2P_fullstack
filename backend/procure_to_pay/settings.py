@@ -180,12 +180,51 @@ SIMPLE_JWT = {
 }
 
 # CORS Settings
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-]
+# Check environment variable (case-insensitive)
+cors_allow_all = os.getenv('CORS_ALLOW_ALL_ORIGINS', '').strip().lower()
+CORS_ALLOW_ALL_ORIGINS = cors_allow_all in ('true', '1', 'yes', 'on')
+
+if not CORS_ALLOW_ALL_ORIGINS:
+    CORS_ALLOWED_ORIGINS_ENV = os.getenv('CORS_ALLOWED_ORIGINS', '').strip()
+    if CORS_ALLOWED_ORIGINS_ENV:
+        # Split by comma and clean up each origin
+        origins = [origin.strip() for origin in CORS_ALLOWED_ORIGINS_ENV.split(',') if origin.strip()]
+        CORS_ALLOWED_ORIGINS = origins
+    else:
+        # Default to localhost for development
+        CORS_ALLOWED_ORIGINS = [
+            "http://localhost:3000",
+            "http://127.0.0.1:3000",
+        ]
 
 CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
+
+# Additional CORS settings for better compatibility
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
+
+# Expose headers that frontend might need
+CORS_EXPOSE_HEADERS = [
+    'content-type',
+    'authorization',
+]
 
 # OpenAI API Key for document processing
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY', '')

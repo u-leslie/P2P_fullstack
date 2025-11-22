@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { requestsAPI, PurchaseRequest, RequestItem } from "../../services/api";
+import React, { useState, useRef } from "react";
+import { requestsAPI, documentsAPI, PurchaseRequest, RequestItem } from "../../services/api";
 
 interface RequestFormProps {
   onClose: () => void;
@@ -36,6 +36,8 @@ const RequestForm: React.FC<RequestFormProps> = ({
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [proformaFile, setProformaFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -85,6 +87,19 @@ const RequestForm: React.FC<RequestFormProps> = ({
     }, 0);
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setProformaFile(e.target.files[0]);
+    }
+  };
+
+  const handleRemoveFile = () => {
+    setProformaFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -112,10 +127,26 @@ const RequestForm: React.FC<RequestFormProps> = ({
           ),
       };
 
+      let requestId: number;
       if (initialData) {
         await requestsAPI.update(initialData.id, data);
+        requestId = initialData.id;
       } else {
-        await requestsAPI.create(data);
+        const response = await requestsAPI.create(data);
+        requestId = response.data.id;
+      }
+
+      // Upload proforma if file is selected
+      if (proformaFile && !initialData) {
+        try {
+          await documentsAPI.uploadProforma(requestId, proformaFile);
+        } catch (uploadError: any) {
+          console.error("Proforma upload error:", uploadError);
+          // Don't fail the entire request if proforma upload fails
+          setError(
+            "Request created successfully, but proforma upload failed. You can upload it later."
+          );
+        }
       }
 
       onSuccess();
@@ -320,6 +351,101 @@ const RequestForm: React.FC<RequestFormProps> = ({
                 </p>
               )}
             </div>
+
+            {/* Proforma Upload Field (only for new requests) */}
+            {!initialData && (
+              <div>
+                <label className="block text-gray-700 text-sm font-medium mb-2">
+                  Proforma Invoice <span className="text-gray-400 text-xs">(Optional)</span>
+                </label>
+                <div className="space-y-3">
+                  {!proformaFile ? (
+                    <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-purple-500 hover:bg-purple-50 transition-colors">
+                      <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                        <svg
+                          className="w-10 h-10 mb-3 text-gray-400"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                          />
+                        </svg>
+                        <p className="mb-2 text-sm text-gray-500">
+                          <span className="font-semibold text-purple-600">Click to upload</span> or
+                          drag and drop
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          PDF, PNG, JPG (MAX. 10MB)
+                        </p>
+                      </div>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        className="hidden"
+                        accept=".pdf,.png,.jpg,.jpeg"
+                        onChange={handleFileChange}
+                      />
+                    </label>
+                  ) : (
+                    <div className="flex items-center justify-between p-4 bg-purple-50 border border-purple-200 rounded-lg">
+                      <div className="flex items-center gap-3 flex-1">
+                        <div className="flex-shrink-0">
+                          <svg
+                            className="w-8 h-8 text-purple-600"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                            />
+                          </svg>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-900 truncate">
+                            {proformaFile.name}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {(proformaFile.size / 1024 / 1024).toFixed(2)} MB
+                          </p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleRemoveFile}
+                        className="ml-3 text-red-600 hover:text-red-700 hover:bg-red-50 p-2 rounded-lg transition-colors"
+                        aria-label="Remove file"
+                      >
+                        <svg
+                          className="w-5 h-5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M6 18L18 6M6 6l12 12"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+                  )}
+                  <p className="text-xs text-gray-500">
+                    You can upload the proforma invoice now or later when viewing the request.
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Action Buttons */}

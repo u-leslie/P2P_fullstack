@@ -11,6 +11,10 @@ RUN npm install
 # Copy source files
 COPY . .
 
+# Accept API URL at build time (defaults to backend service)
+ARG REACT_APP_API_URL="http://localhost:8000/api"
+ENV REACT_APP_API_URL=$REACT_APP_API_URL
+
 # Build the app
 RUN npm run build
 

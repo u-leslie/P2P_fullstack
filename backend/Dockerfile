@@ -1,5 +1,8 @@
 FROM python:3.11-slim
 
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1
+
 WORKDIR /app
 
 # Install system dependencies
@@ -19,12 +22,17 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy project files
 COPY . .
 
-# Collect static files
+# Collect static files (ignore failure if not configured yet)
 RUN python manage.py collectstatic --noinput || true
+
+# Copy entrypoint script
+COPY entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
 
 # Expose port
 EXPOSE 8000
 
-# Run migrations, seed users, and start server
-CMD ["sh", "-c", "python manage.py migrate && python manage.py seed_users && python manage.py runserver 0.0.0.0:8000"]
+# Start the application via entrypoint (runs migrations/seed before gunicorn)
+ENTRYPOINT ["/app/entrypoint.sh"]
+CMD ["gunicorn", "procure_to_pay.wsgi:application", "--bind", "0.0.0.0:8000"]
 
